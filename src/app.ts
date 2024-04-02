@@ -26,7 +26,7 @@ app.post("/auth/register", async (req: Request, res: Response) => {
     // ** Check the email all ready exist  in database or not ;
     // ** Import the user model from "./models/user";
 
-    const isEmailAllReadyExist:any = await db.func('verifyemail',email);
+    const isEmailAllReadyExist:any = await db.func('get_user_by_email',email);
     // ** Add a condition if the user exist we will send the response as email all ready exist
     console.log(isEmailAllReadyExist)
     if (isEmailAllReadyExist.length >0) {
@@ -51,16 +51,13 @@ app.post("/auth/login", async (req: Request, res: Response) => {
     // ** Check the email all ready exist  in database or not ;
     // ** Import the user model from "./models/user";
 
-    const isEmailAllReadyExist:Users = await db.func('get_user_by_email',email);
-    // ** Add a condition if the user exist we will send the response as email all ready exist
-
-    if (Array.isArray(isEmailAllReadyExist)) {
+    console.log(email, password);
+    const isEmailAllReadyExist = await db.func('get_user_by_email',email);
+    if (!isEmailAllReadyExist[0].email) {
       return results(400, JSON.stringify('Email is not ready in use'), res);
     }
-    const descrypass = decryptStringFromStringAes(isEmailAllReadyExist?.password,String(process.env.KEY),String(process.env.IV));
-    const isPasswordMatched =  descrypass === password;
-    
-    if (!isPasswordMatched) {
+
+    if (!decryptStringFromStringAes(isEmailAllReadyExist[0].password,String(process.env.KEY),String(process.env.IV), password)) {
       res.status(400).json({
         status: 400,
         success: false,
@@ -98,7 +95,8 @@ app.get('/', async (req: Request, res: Response) => {
 
 app.get('/api/data', async (req: Request, res: Response) => {
   try {
-    const id = req.query.id;
+    const { id } = req.body;
+    console.log(id)
     const user = await getbyId(Number(id));
     return results(200, JSON.stringify(user), res);
   } catch(err: any){

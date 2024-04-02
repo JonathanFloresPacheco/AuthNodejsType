@@ -3,6 +3,7 @@ import { Users } from "../../interfaces/users";
 
 export async function getbyId(id_user: number): Promise<Users[]> {
     // Verificar si id_user es un número válido
+    console.log(id_user);
     if (isNaN(id_user)) {
         throw new Error("El valor de id_user no es un número válido.");
     }

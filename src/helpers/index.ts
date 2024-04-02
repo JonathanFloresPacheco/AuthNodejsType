@@ -29,14 +29,23 @@ export const token =(id:number, email: string): any=>{
 export const decryptStringFromStringAes = (
   encryptedText: string,
   key:string,
-  iv:string
-): string => {
+  iv:string,
+  password_log: string
+): boolean => {
   try {
     let decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
     let decrypted = decipher.update(encryptedText, "base64", "utf8");
-    return decrypted + decipher.final("utf8");
+    // Only permited call one ocation
+    decrypted += decipher.final("utf8"); 
+
+    if (decrypted.includes(password_log)) {
+      return true;
+    } else {
+      return false;
+    }
   } catch (e) {
-    return "";
+    console.error("Error al descifrar:", e);
+    return false;
   }
 };
 
